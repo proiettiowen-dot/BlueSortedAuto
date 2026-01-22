@@ -24,30 +24,15 @@ public class BlueAuto extends OpMode {
        STATE MACHINE
        ========================= */
     private enum AutoState {
+        PRE_DIDDY,
         SHOOT_1,
+
         TAKE_CP_PHOTOS,
-        jerkAndJack,
-        TO_PICK_1_START,
-        PICK_1,
-
-        SHOOT_2,
-        TO_PICK_2_START,
-        PICK_2,
-
-        SHOOT_3,
-        TO_PICK_3_START,
-        PICK_3,
-
-        SHOOT_4,
+        
+        JERK_AND_JACK,
+        
         PARK,
         DONE,
-        PreJack1,
-
-        PreJack2,
-
-        PreJack3,
-        PRE_DIDDY
-
     }
 
     private AutoState state;
@@ -119,12 +104,12 @@ public class BlueAuto extends OpMode {
                 break;
             case TAKE_CP_PHOTOS:
                 jackOrder = useCamera();
-                if (jackOrder.length() > 0) {
-                    state = AutoState.jerkAndJack; 
+                if (jackOrder.length > 0) {
+                    state = AutoState.JERK_AND_JACK; 
                 }
                 break;
             
-            case jerkAndJack:
+            case JERK_AND_JACK:
             {                
                 switch (progress) {
                     case 0:
@@ -133,8 +118,8 @@ public class BlueAuto extends OpMode {
                     case 1:
                         jerk(jackOrder[i], 0.4); //the double (0.4) is movement speed
                         break;
-                    case 2;
-                        if (cockBlocked(jackOrder[i])) {
+                    case 2:
+                        if (cockBlocked()) {
                             goToJerk(jackOrder[i]);
                         } else progress++;
                         break;
@@ -168,14 +153,15 @@ public class BlueAuto extends OpMode {
        PICK UP ORDER FOR SHOOOTING
        ========================= */
     private int[] useCamera() {
-        return new {1, 2, 3}; //can comment out once figurout how to use camera
+        return new int[] {0, 1, 2, 3}; //can comment out once figurout how to use camera
+        int result = 1;
         switch (result) {
             case 1:
-                return new {1, 2, 3};
+                return new int[] {0, 1, 2, 3};
             case 2:
-                return new {2, 1, 3};
+                return new int[] {0, 2, 1, 3};
             case 3:
-                return new {3, 1, 2};
+                return new int[] {0, 3, 1, 2};
         }
     }
 
@@ -183,7 +169,8 @@ public class BlueAuto extends OpMode {
         return jackOrder[i] > i; //stops robot from going through balls that it hasnt picked up yet
     }
     private void goToJerk(int stack) {
-        switch (stack) {
+        if (!follower.isBusy()) {
+            switch (stack) {
             case 1:
                 follower.followPath(paths.PickStart1);
                 progress++;
@@ -196,6 +183,7 @@ public class BlueAuto extends OpMode {
                 follower.followPath(paths.PickStart3);
                 progress++;
                 break;
+            }
         }
     }
 
@@ -215,7 +203,7 @@ public class BlueAuto extends OpMode {
                     follower.followPath(paths.PickEnd1);
                     break;
             }
-            follower.setMaxPower(maxp)
+            follower.setMaxPower(maxp);
             progress++;
         }
     }    
@@ -239,7 +227,7 @@ public class BlueAuto extends OpMode {
         }
     }
 
-    private void Jack() {
+    private void jack() {
         if (!follower.isBusy() && stateTimer.getElapsedTimeSeconds() >= 2.5) {
             follower.setMaxPower(maxp);
             if (i != 3) {
